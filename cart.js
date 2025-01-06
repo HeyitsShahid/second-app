@@ -1,143 +1,133 @@
+// Clear the console for debugging purposes
 console.clear();
 
-if(document.cookie.indexOf(',counter=')>=0)
-{
-    let counter = document.cookie.split(',')[1].split('=')[1]
-    document.getElementById("badge").innerHTML = counter
+/**
+ * Utility function to get a specific cookie value by name
+ */
+function getCookieValue(name) {
+    const cookieArr = document.cookie.split("; ").map(cookie => cookie.split("="));
+    const cookieObj = Object.fromEntries(cookieArr);
+    return cookieObj[name] || null;
 }
 
+// Validate and get the counter value from cookies
+const counterCookie = getCookieValue("counter");
+const counter = counterCookie ? Number(counterCookie) : 0;
 
-let cartContainer = document.getElementById('cartContainer')
-
-let boxContainerDiv = document.createElement('div')
-boxContainerDiv.id = 'boxContainer'
-
-// DYNAMIC CODE TO SHOW THE SELECTED ITEMS IN YOUR CART
-function dynamicCartSection(ob,itemCounter)
-{
-    let boxDiv = document.createElement('div')
-    boxDiv.id = 'box'
-    boxContainerDiv.appendChild(boxDiv)
-
-    let boxImg = document.createElement('img')
-    boxImg.src = ob.preview
-    boxDiv.appendChild(boxImg)
-
-    let boxh3 = document.createElement('h3')
-    let h3Text = document.createTextNode(ob.name + ' × ' + itemCounter)
-    // let h3Text = document.createTextNode(ob.name)
-    boxh3.appendChild(h3Text)
-    boxDiv.appendChild(boxh3)
-
-    let boxh4 = document.createElement('h4')
-    let h4Text = document.createTextNode('Amount: Rs' + ob.price)
-    boxh4.appendChild(h4Text)
-    boxDiv.appendChild(boxh4)
-
-    // console.log(boxContainerDiv);
-
-    buttonLink.appendChild(buttonText)
-    cartContainer.appendChild(boxContainerDiv)
-    cartContainer.appendChild(totalContainerDiv)
-    // let cartMain = document.createElement('div')
-    // cartmain.id = 'cartMainContainer'
-    // cartMain.appendChild(totalContainerDiv)
-
-    return cartContainer
+// Update badge if counter is valid
+if (counter > 0) {
+    document.getElementById("badge").innerHTML = counter;
 }
 
-let totalContainerDiv = document.createElement('div')
-totalContainerDiv.id = 'totalContainer'
+// Container for cart items
+const cartContainer = document.getElementById("cartContainer");
 
-let totalDiv = document.createElement('div')
-totalDiv.id = 'total'
-totalContainerDiv.appendChild(totalDiv)
+const boxContainerDiv = document.createElement("div");
+boxContainerDiv.id = "boxContainer";
 
-let totalh2 = document.createElement('h2')
-let h2Text = document.createTextNode('Total Amount')
-totalh2.appendChild(h2Text)
-totalDiv.appendChild(totalh2)
+// Dynamically render items in the cart
+function dynamicCartSection(ob, itemCounter) {
+    const boxDiv = document.createElement("div");
+    boxDiv.id = "box";
+    boxContainerDiv.appendChild(boxDiv);
 
-// TO UPDATE THE TOTAL AMOUNT
-function amountUpdate(amount)
-{
-    let totalh4 = document.createElement('h4')
-    // let totalh4Text = document.createTextNode(amount)
-    let totalh4Text = document.createTextNode('Amount: Rs ' + amount)
-    totalh4Text.id = 'toth4'
-    totalh4.appendChild(totalh4Text)
-    totalDiv.appendChild(totalh4)
-    totalDiv.appendChild(buttonDiv)
-    console.log(totalh4);
+    const boxImg = document.createElement("img");
+    boxImg.src = ob.preview || "default.jpg"; // Fallback for missing image
+    boxDiv.appendChild(boxImg);
+
+    const boxh3 = document.createElement("h3");
+    const h3Text = document.createTextNode(`${ob.name} × ${itemCounter}`);
+    boxh3.appendChild(h3Text);
+    boxDiv.appendChild(boxh3);
+
+    const boxh4 = document.createElement("h4");
+    const h4Text = document.createTextNode(`Amount: Rs ${ob.price * itemCounter}`);
+    boxh4.appendChild(h4Text);
+    boxDiv.appendChild(boxh4);
+
+    cartContainer.appendChild(boxContainerDiv);
+    cartContainer.appendChild(totalContainerDiv);
 }
 
+// Container for the total amount
+const totalContainerDiv = document.createElement("div");
+totalContainerDiv.id = "totalContainer";
 
-let buttonDiv = document.createElement('div')
-buttonDiv.id = 'button'
-totalDiv.appendChild(buttonDiv)
+const totalDiv = document.createElement("div");
+totalDiv.id = "total";
+totalContainerDiv.appendChild(totalDiv);
 
-let buttonTag = document.createElement('button')
-buttonDiv.appendChild(buttonTag)
+// Add header for total amount
+const totalh2 = document.createElement("h2");
+const h2Text = document.createTextNode("Total Amount");
+totalh2.appendChild(h2Text);
+totalDiv.appendChild(totalh2);
 
-let buttonLink = document.createElement('a')
-buttonLink.href = '/orderPlaced.html?'
-buttonTag.appendChild(buttonLink)
+// Function to update the total amount dynamically
+function amountUpdate(amount) {
+    totalDiv.querySelectorAll("h4").forEach(el => el.remove()); // Clear previous amounts
+    const totalh4 = document.createElement("h4");
+    const totalh4Text = document.createTextNode(`Amount: Rs ${amount}`);
+    totalh4.appendChild(totalh4Text);
+    totalDiv.appendChild(totalh4);
+    totalDiv.appendChild(buttonDiv);
+}
 
-buttonText = document.createTextNode('Place Order')
-buttonTag.onclick = function()
-{
-    console.log("clicked")
-}  
-//dynamicCartSection()
-// console.log(dynamicCartSection());
+// Button to place the order
+const buttonDiv = document.createElement("div");
+buttonDiv.id = "button";
+totalDiv.appendChild(buttonDiv);
 
-// BACKEND CALL
-let httpRequest = new XMLHttpRequest()
-let totalAmount = 0
-httpRequest.onreadystatechange = function()
-{
-    if(this.readyState === 4)
-    {
-        if(this.status == 200)
-        {
-            // console.log('call successful');
-            contentTitle = JSON.parse(this.responseText)
+const buttonTag = document.createElement("button");
+buttonDiv.appendChild(buttonTag);
 
-            let counter = Number(document.cookie.split(',')[1].split('=')[1])
-            document.getElementById("totalItem").innerHTML = ('Total Items: ' + counter)
+const buttonLink = document.createElement("a");
+buttonLink.href = "/orderPlaced.html?";
+buttonTag.appendChild(buttonLink);
 
-            let item = document.cookie.split(',')[0].split('=')[1].split(" ")
-            console.log(counter)
-            console.log(item)
+const buttonText = document.createTextNode("Place Order");
+buttonLink.appendChild(buttonText);
 
-            let i;
-            let totalAmount = 0
-            for(i=0; i<counter; i++)
-            {
-                let itemCounter = 1
-                for(let j = i+1; j<counter; j++)
-                {   
-                    if(Number(item[j]) == Number(item[i]))
-                    {
-                        itemCounter +=1;
+buttonTag.onclick = function () {
+    console.log("Order placed!");
+};
+
+// Backend API call to fetch product data
+let httpRequest = new XMLHttpRequest();
+httpRequest.onreadystatechange = function () {
+    if (this.readyState === 4) {
+        if (this.status === 200) {
+            try {
+                const contentTitle = JSON.parse(this.responseText);
+
+                const itemCookie = getCookieValue("items");
+                const item = itemCookie ? itemCookie.split(" ") : [];
+                
+                let totalAmount = 0;
+
+                item.forEach((id, index) => {
+                    const product = contentTitle.find(p => p.id === Number(id));
+                    if (product) {
+                        let itemCounter = item.filter(x => x === id).length;
+                        totalAmount += Number(product.price) * itemCounter;
+
+                        dynamicCartSection(product, itemCounter);
+
+                        // Remove duplicates from processing
+                        item.splice(index, itemCounter - 1);
                     }
-                }
-                totalAmount += Number(contentTitle[item[i]-1].price) * itemCounter
-                dynamicCartSection(contentTitle[item[i]-1],itemCounter)
-                i += (itemCounter-1)
+                });
+
+                amountUpdate(totalAmount);
+            } catch (error) {
+                console.error("Error processing response:", error);
             }
-            amountUpdate(totalAmount)
+        } else {
+            console.error("API call failed with status:", this.status);
         }
     }
-        else
-        {
-            console.log('call failed!');
-        }
-}
+};
 
-httpRequest.open('GET', 'https://5d76bf96515d1a0014085cf9.mockapi.io/product', true)
-httpRequest.send()
-
-
-
-
+// Open and send API request
+httpRequest.open("GET", "https://5d76bf96515d1a0014085cf9.mockapi.io/product", true);
+httpRequest.send();
